@@ -1,3 +1,4 @@
+
 # ⚡ RealiTLScanner 图形界面
 
 RealiTLScanner 的现代暗色主题 Windows 图形界面——这是一款强大的 TLS 1.3 扫描器，用于发现可行的 REALITY 目标。
@@ -23,7 +24,7 @@ RealiTLScanner 的现代暗色主题 Windows 图形界面——这是一款强�
 
 ## 📸 截图
 
-<img width="1359" height="967" alt="image" src="https://github.com/user-attachments/assets/ae9ba6f9-5a83-4ad4-bb12-a0b52507a149" />
+<img width="1085" height="769" alt="RealiTLScannerGUI" src="https://github.com/user-attachments/assets/ce676eda-e129-4cb3-809d-63c70fcede7a" />
 
 ---
 
