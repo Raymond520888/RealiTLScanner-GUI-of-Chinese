@@ -92,3 +92,7 @@ GUI 将所有原始命令行标志映射为直观的控件：
 ## 📄 许可证
 
 本项目遵循与原 [RealiTLScanner](https://github.com/XTLS/RealiTLScanner) 相同的许可证。
+
+引用来自原作者    https://github.com/EikeiDev/RealiTLScanner-GUI
+
+
