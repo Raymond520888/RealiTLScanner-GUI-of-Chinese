@@ -23,7 +23,8 @@ RealiTLScanner 的现代暗色主题 Windows 图形界面——这是一款强�
 
 ## 📸 截图
 
-<img width="1085" height="771" alt="image" src="https://github.com/user-attachments/assets/68ca1a8e-fbcc-4da4-bfc9-0fc06c37012f" />
+<img width="1085" height="770" alt="image" src="https://github.com/user-attachments/assets/18f8ca36-e969-452b-9bc4-5e4936d43b78" />
+
 
 
 ---
