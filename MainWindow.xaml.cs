@@ -17,6 +17,12 @@ namespace RealiTLScannerGUI
     {
         public string IP { get; set; } = "";
         public string Origin { get; set; } = "";
+        public string TLS { get; set; } = "";
+        public string ALPN { get; set; } = "";
+        public string Curve { get; set; } = "";
+        public string CertLength { get; set; } = "";
+        public string CertSignature { get; set; } = "";
+        public string CertPublicKey { get; set; } = "";
         public string CertDomain { get; set; } = "";
         public string CertIssuer { get; set; } = "";
         public string GeoCode { get; set; } = "";
@@ -193,7 +199,6 @@ namespace RealiTLScannerGUI
                 AppendLog($"[地理IP] 您也可以手动从以下地址下载，并放入扫描器所在目录：\n", isWarning: true);
                 AppendLog($"[地理IP] {GeoDbUrl}\n", isWarning: true);
                 AppendLog($"[地理IP] 文件名必须为 {GeoDbFileName}\n", isWarning: true);
-                // 新增备用提示：直接使用已有文件
                 AppendLog($"[地理IP] 或者，如果您已有 Country.mmdb 文件，请直接复制到扫描器所在目录，程序将自动使用（跳过下载）。\n", isWarning: true);
 
                 SetStatus("就绪（GeoIP 不可用）", new SolidColorBrush((Color)FindResource("AccentOrange")));
@@ -294,8 +299,7 @@ namespace RealiTLScannerGUI
             if (int.TryParse(TxtPort.Text, out var port) && port != 443)
                 args.Append($"-port {port} ");
 
-            if (int.TryParse(TxtThreads.Text, out var threads) && threads != 2)
-                args.Append($"-thread {threads} ");
+            args.Append("-thread 128 ");
 
             if (int.TryParse(TxtTimeout.Text, out var timeout) && timeout != 10)
                 args.Append($"-timeout {timeout} ");
@@ -427,16 +431,30 @@ namespace RealiTLScannerGUI
                     var parsed = ParseCsvLine(lines[i]);
                     if (parsed != null)
                     {
-                        bool exists = false;
+                        ScanResult? existing = null;
                         foreach (var r in _results)
                         {
                             if (r.IP == parsed.IP && r.CertDomain == parsed.CertDomain)
                             {
-                                exists = true;
+                                existing = r;
                                 break;
                             }
                         }
-                        if (!exists)
+
+                        if (existing != null)
+                        {
+                            existing.Origin = parsed.Origin;
+                            existing.TLS = parsed.TLS;
+                            existing.ALPN = parsed.ALPN;
+                            existing.Curve = parsed.Curve;
+                            existing.CertLength = parsed.CertLength;
+                            existing.CertSignature = parsed.CertSignature;
+                            existing.CertPublicKey = parsed.CertPublicKey;
+                            existing.CertDomain = parsed.CertDomain;
+                            existing.CertIssuer = parsed.CertIssuer;
+                            existing.GeoCode = parsed.GeoCode;
+                        }
+                        else
                         {
                             _results.Add(parsed);
                             loadedCount++;
@@ -453,7 +471,7 @@ namespace RealiTLScannerGUI
             }
             catch (Exception ex)
             {
-                AppendLog($"[警告] 读取 CSV 失败：{ex.Message}\n", isWarning: true);
+                AppendLog($"[警告] 读取或处理 CSV 失败：{ex.Message}\n", isWarning: true);
             }
         }
 
@@ -462,16 +480,37 @@ namespace RealiTLScannerGUI
             if (string.IsNullOrWhiteSpace(line)) return null;
 
             var parts = SplitCsvLine(line);
-            if (parts.Count < 5) return null;
-
-            return new ScanResult
+            
+            if (parts.Count >= 11)
             {
-                IP = parts[0],
-                Origin = parts[1],
-                CertDomain = parts[2],
-                CertIssuer = parts[3].Trim('"'),
-                GeoCode = parts[4]
-            };
+                return new ScanResult
+                {
+                    IP = parts[0],
+                    Origin = parts[1],
+                    TLS = parts[2],
+                    ALPN = parts[3],
+                    Curve = parts[4],
+                    CertLength = parts[5],
+                    CertSignature = parts[6],
+                    CertPublicKey = parts[7],
+                    CertDomain = parts[8],
+                    CertIssuer = parts[9],
+                    GeoCode = parts[10]
+                };
+            }
+            else if (parts.Count >= 5)
+            {
+                return new ScanResult
+                {
+                    IP = parts[0],
+                    Origin = parts[1],
+                    CertDomain = parts[2],
+                    CertIssuer = parts[3],
+                    GeoCode = parts[4]
+                };
+            }
+            
+            return null;
         }
 
         private System.Collections.Generic.List<string> SplitCsvLine(string line)
@@ -525,7 +564,6 @@ namespace RealiTLScannerGUI
             }
             catch
             {
-                // 忽略解析失败
             }
         }
 
@@ -674,10 +712,10 @@ namespace RealiTLScannerGUI
                 try
                 {
                     var sb = new StringBuilder();
-                    sb.AppendLine("IP,来源,证书域名,证书颁发者,地理位置");
+                    sb.AppendLine("IP,ORIGIN,TLS,ALPN,CURVE,CERT_LENGTH,CERT_SIGNATURE,CERT_PUBLICKEY,CERT_DOMAIN,CERT_ISSUER,GEO_CODE");
                     foreach (var r in _results)
                     {
-                        sb.AppendLine($"{r.IP},{r.Origin},{r.CertDomain},\"{r.CertIssuer}\",{r.GeoCode}");
+                        sb.AppendLine($"{r.IP},{r.Origin},{r.TLS},{r.ALPN},{r.Curve},{r.CertLength},\"{r.CertSignature}\",\"{r.CertPublicKey}\",{r.CertDomain},\"{r.CertIssuer}\",{r.GeoCode}");
                     }
                     File.WriteAllText(dlg.FileName, sb.ToString());
                     MessageBox.Show($"已导出 {_results.Count} 条结果到：\n{dlg.FileName}", "导出完成",
@@ -749,7 +787,7 @@ namespace RealiTLScannerGUI
             if (_results.Count == 0) return;
 
             var sb = new StringBuilder();
-            sb.AppendLine("IP\t来源\t证书域名\t证书颁发者\t地理位置");
+            sb.AppendLine("IP\tORIGIN\tCERT_DOMAIN\tCERT_ISSUER\tGEO_CODE");
             foreach (var r in _results)
             {
                 sb.AppendLine($"{r.IP}\t{r.Origin}\t{r.CertDomain}\t{r.CertIssuer}\t{r.GeoCode}");

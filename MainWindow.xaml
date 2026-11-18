@@ -112,7 +112,7 @@
                         <TextBlock Text="线程数" FontSize="10" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextSecondaryBrush}" 
                                    Margin="2,0,0,5" FontFamily="Segoe UI"/>
-                        <TextBox x:Name="TxtThreads" Text="8" Style="{StaticResource ModernTextBox}"/>
+                        <TextBox x:Name="TxtThreads" Text="128" Style="{StaticResource ModernTextBox}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Margin="8,0,8,0">
